@@ -12,8 +12,9 @@ Keep each platform lifecycle phase focused on work that belongs to that phase.
 
 For Paper plugins:
 
-- `onLoad` SHOULD perform initialization required before enable-time registration, when the platform contract requires it.
-- `onEnable` SHOULD create runtime services, register listeners and commands, connect optional integrations, and start tasks needed for normal operation.
+- bootstrap or Paper lifecycle events SHOULD be used for registrations that belong to those lifecycle APIs, such as reloadable command registration;
+- `onLoad` SHOULD perform initialization that must happen before normal enable-time work when the platform contract requires it;
+- `onEnable` SHOULD create runtime services, register ordinary runtime listeners, connect optional integrations, and start tasks needed for normal operation;
 - `onDisable` SHOULD stop owned runtime activity and release resources that can outlive the plugin's enabled state.
 
 Do not start background work in a constructor unless the platform or framework explicitly requires constructor-time initialization. Constructors SHOULD establish object invariants, not activate the plugin.
@@ -126,6 +127,8 @@ Examples include translation registries, third-party APIs, static registries, se
 
 When the registration API returns a handle, store and close/unregister that handle. When it requires the original listener or source instance, retain that instance for cleanup.
 
+Paper lifecycle registrations SHOULD use the lifecycle API when the registration is designed to be reapplied by Paper during a server lifecycle event. Do not manually duplicate lifecycle-managed registration on each reload.
+
 Platform-managed listener registration MAY rely on platform cleanup at plugin disable when the platform contract guarantees it, but explicit feature-level unregistering is still appropriate when a listener must be removed before plugin disable or during reload.
 
 ## 9. Database and network resources
@@ -210,6 +213,7 @@ Before merging lifecycle-related changes, verify that:
 - every long-lived resource has a clear owner;
 - resource acquisition has a corresponding retirement operation;
 - constructors do not unexpectedly start runtime work;
+- Paper lifecycle-managed registrations use the lifecycle API rather than ad hoc reload registration;
 - required initialization fails closed rather than leaving partial runtime state active;
 - partial initialization cleans up resources already acquired;
 - shutdown stops producers before closing resources they depend on;
@@ -220,3 +224,8 @@ Before merging lifecycle-related changes, verify that:
 - common modules express lifecycle without unnecessary Paper or Velocity types;
 - important persistent state does not depend exclusively on `onDisable` for durability;
 - cleanup remains effective when one individual close operation fails.
+
+## References
+
+- [PaperMC: Lifecycle API](https://docs.papermc.io/paper/dev/api/lifecycle/)
+- [PaperMC: Command registration](https://docs.papermc.io/paper/dev/command-api/basics/registration/)
