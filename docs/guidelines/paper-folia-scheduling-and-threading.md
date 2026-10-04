@@ -58,7 +58,7 @@ Use `entity.getScheduler()` for operations whose ownership follows an entity.
 
 This includes delayed or deferred work that later reads or modifies an entity. An entity can move between regions between scheduling and execution, so a location captured earlier is not a substitute for the entity scheduler.
 
-A retired callback SHOULD be supplied when the API offers one and the caller needs to handle an entity that is removed before execution.
+Use the retired callback when the operation needs explicit handling for an entity that is removed before execution.
 
 ### Region scheduler
 
@@ -84,6 +84,8 @@ Use the async scheduler for work that does not require ownership of server tick 
 
 Code running asynchronously MUST NOT read or mutate region-owned Bukkit/Paper state unless the API explicitly documents that operation as thread-safe.
 
+The platform async scheduler is appropriate for ordinary off-thread work. A plugin MAY own a dedicated executor when it needs isolation, bounded concurrency, or a lifecycle that the platform scheduler does not provide. Such an executor must be shut down by its owner.
+
 ## 3. Crossing an async boundary
 
 Separate platform-state access from blocking work.
@@ -92,7 +94,7 @@ A typical operation SHOULD follow this sequence:
 
 1. Read the required server state on the owning entity or region scheduler.
 2. Convert that state into immutable or independently thread-safe data.
-3. Perform blocking or expensive work asynchronously.
+3. Perform blocking I/O or bounded computation off the tick-owning scheduler.
 4. Schedule the result back onto the scheduler that owns the affected server state.
 5. Revalidate assumptions that may have changed while the async work was running.
 
@@ -138,6 +140,8 @@ The following work SHOULD NOT run on a tick-owning scheduler when it can block f
 - expensive serialization, compression, or bulk computation.
 
 Do not call `Future#get`, `CompletableFuture#join`, or equivalent blocking waits from a region, entity, or global scheduler to wait for async work. Continue the operation asynchronously and schedule the result back to the correct owner.
+
+CPU-heavy work SHOULD use bounded concurrency so it cannot consume the server's available worker capacity without limit.
 
 ## 7. Task lifetime and cancellation
 
