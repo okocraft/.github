@@ -2,7 +2,7 @@
 
 This document defines configuration loading, validation, publication, and reload conventions for OKOCRAFT plugins.
 
-For Paper plugins, Configurate is the standard configuration library. Paper already provides Configurate at runtime, so Paper-side plugins should use the server-provided library instead of bundling another copy.
+For Paper plugins, Configurate is the standard configuration library. Paper provides Configurate at runtime, so Paper-side plugins should use the server-provided library instead of bundling another copy.
 
 The key words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** describe requirement levels in this document.
 
@@ -10,9 +10,11 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** de
 
 Paper-side code SHOULD use Configurate for structured configuration.
 
-A Paper plugin MUST NOT shade or bundle a separate Configurate implementation solely for its Paper runtime. The Paper API dependency should provide the compile-time API needed by Paper-specific modules.
+A Paper plugin MUST NOT shade or bundle a separate Configurate implementation solely for its Paper runtime.
 
-A shared module used by Paper and another platform MAY declare Configurate explicitly when that module needs Configurate on its compile classpath. Packaging decisions for that module MUST still respect the runtime contract of each platform.
+Builds MAY declare Configurate as `compileOnly` when a module needs an explicit compile-time dependency. That declaration must not cause another Configurate copy to be packaged into the Paper plugin.
+
+A shared module used by Paper and another platform MAY declare Configurate explicitly when that module needs Configurate on its compile classpath. Packaging decisions for that module MUST respect the runtime contract of each target platform.
 
 Do not mix Bukkit `FileConfiguration`, Configurate, and custom YAML parsers in one new configuration system without a concrete interoperability requirement.
 
@@ -221,4 +223,4 @@ Before merging configuration changes, verify that:
 ## References
 
 - [PaperMC: Plugin configuration](https://docs.papermc.io/paper/dev/plugin-configurations/)
-- [Configurate documentation](https://docs.spongepowered.org/stable/en/server/getting-started/configuration/)
+- [SpongePowered Configurate](https://github.com/SpongePowered/Configurate)
